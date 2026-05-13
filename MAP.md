@@ -9,8 +9,8 @@
 | 触发 | 方向 | GAP | 目标单词 | 锚点 |
 |------|------|-----|----------|------|
 | p | ↓ 下 | 5500 | Digital Products | D |
-| r | ↓ 下 | 2500 | Design & Visual Identity | D |
-| f | ↓ 下 | 1500 | Illustration | I |
+| r | ↓ 下 | 4000 | Design & Visual Identity | D |
+| f | ↓ 下 | 2500 | Illustration | I |
 | l | ↑ 上 | 2500 | About Me | A |
 
 ## 文件结构
@@ -68,6 +68,8 @@ Resize：
 | **坐标映射** | `setupLetter()` | 所有计算统一用 SVG 像素坐标 |
 | **生长动画** | CSS `.extension-stem` | stroke-dasharray/dashoffset transition |
 | **逐字动画** | CSS `.char-anim` | `transition-delay: calc(var(--i) * 0.06s)` |
+| **hover/点击动画** | `setupLetter()` JS | dy 属性操作，hover 下移 6px + 点击回弹 |
+| **碰撞箱扩展** | CSS `.char-trigger` | 透明描边 stroke-width:6px 扩大可点击区域 |
 | **配置驱动** | `LETTER_CONFIGS[]` | 新增字母只需加一条配置 |
 
 ## 公共调参区

@@ -41,11 +41,6 @@ body {
     overflow: visible;
 }
 
-/* ========== 辅助测量（隐藏） ========== */
-.stem-measure {
-    visibility: hidden;
-}
-
 /* ========== 核心单词 ========== */
 .portfolio {
     font-size: 72px;
@@ -78,9 +73,15 @@ body {
     fill: #333;          /* 默认颜色，但最终会被 .char-anim 覆盖 */
 }
 
-/* I 字母隐藏但占位 */
+/* D 字母作为对齐锚点，字号与 P 一致，随动画逐字出现 */
 .char-target {
-    visibility: hidden;
+    font-size: 72px;
+    fill: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s ease, fill 0.2s ease;
+    &.show {
+        opacity: 1;
+    }
 }
 
 /* 每个动画字母 */
@@ -100,16 +101,10 @@ body {
 
 
 
-.extension-line {
-    stroke: var(--accent);
-    stroke-linecap: butt;
-    stroke-dasharray: var(--line-length, 0);
-    stroke-dashoffset: var(--line-length, 0);
+/* ========== 延伸竖线 ========== */
+.extension-stem {
     transition: stroke-dashoffset 0.7s var(--ease);
     will-change: stroke-dashoffset;
-    &.active {
-        stroke-dashoffset: 0;
-    }
 }
 
 

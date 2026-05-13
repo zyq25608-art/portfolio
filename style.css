@@ -47,21 +47,19 @@ body {
     font-weight: 300;
     letter-spacing: 6px;
     fill: var(--text);
-    cursor: pointer;
     user-select: none;
 }
 
-.portfolio tspan {
+/* 触发字母通用样式 */
+.char-trigger {
+    cursor: pointer;
     transition: fill 0.2s ease;
     &:hover {
         fill: rgba(255, 255, 255, 0.8);
     }
-
-}
-
-
-.portfolio .char-trigger.active {
-    fill: var(--accent);
+    &.active {
+        fill: var(--accent);
+    }
 }
 
 
@@ -70,7 +68,8 @@ body {
     font-size: 24px;
     font-weight: 200;
     letter-spacing: 4px;
-    fill: #333;          /* 默认颜色，但最终会被 .char-anim 覆盖 */
+    fill: #333;
+    user-select: none;
 }
 
 /* D 字母作为对齐锚点，字号与 P 一致，随动画逐字出现 */

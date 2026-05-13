@@ -1,28 +1,50 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const triggerChar = document.querySelector('.char-trigger');
-    const targetChar = document.querySelector('.char-target');
-    const targetSection = document.querySelector('.section-title');
     const canvas = document.querySelector('.canvas');
+    const portfolio = document.querySelector('.portfolio');
 
-    let isAnimating = false;
-    let _pData = null;
-    let _dData = null;
+    // ==================== 字母配置 ====================
+    const LETTER_CONFIGS = [
+        {
+            id: 'p',
+            triggerSelector: '.char-trigger-p',
+            targetSection: '.section-p',
+            gap: 5500,
+            triggerChar: 'p',
+            anchorChar: 'D',
+        },
+        {
+            id: 'r',
+            triggerSelector: '.char-trigger-r',
+            targetSection: '.section-r',
+            gap: 2500,
+            triggerChar: 'r',
+            anchorChar: 'D',
+        },
+        {
+            id: 'f',
+            triggerSelector: '.char-trigger-f',
+            targetSection: '.section-f',
+            gap: 1500,
+            triggerChar: 'f',
+            anchorChar: 'I',
+        },
+    ];
 
     // ==================== 公共调参区 ====================
-    const GAP = 2500; // 延伸距离（字体单位，Pixelify Sans 的 unitsPerEm=1000）
     const WIDTH_MULTIPLIER = 1.35; // 延伸宽度倍率
-    const MEASURE_X = 500; // D 的临时测量 X 坐标（仅用于测偏移，不影响最终定位）
-    const MEASURE_Y = 600; // D 的临时测量 Y 坐标
+    const MEASURE_X = 500; // 锚点字母临时测量 X 坐标
+    const MEASURE_Y = 600; // 锚点字母临时测量 Y 坐标
     const ANIM_DELAY = 500; // 延伸动画时长 (ms)
 
+    // ==================== 每个字母的运行状态 ====================
+    const letterStates = {};
+
     /**
-     * 从路径命令中提取竖线矩形 — 像素字体极简版
-     * 取最小两个 x 值作为竖线左右沿，取所有 y 的最值作为上下沿
+     * 从路径命令中提取竖线矩形 — 像素字体用
      */
-    function getStemFromPath(commands) {
+    function getStemFromPath(commands, char) {
         const pts = commands.filter((c) => c.x !== undefined);
 
-        // 提取所有垂直边（dx 小、dy 大的线段）
         const verticalEdges = [];
         for (let i = 1; i < pts.length; i++) {
             const dx = Math.abs(pts[i].x - pts[i - 1].x);
@@ -36,22 +58,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 按 x 聚合，取最左侧一组作为竖线
         const sortedX = [...new Set(verticalEdges.map((e) => e.x))].sort(
             (a, b) => a - b
         );
-        const stemX = sortedX[0];
+
+        let stemLeft;
+        if (char === 'I') {
+            // I 有 serif：排除全长外轮廓组后，取最左的组作为竖线左沿
+            const groups = sortedX.map((x) => {
+                const edges = verticalEdges.filter(
+                    (e) => Math.abs(e.x - x) < 3
+                );
+                const maxEdgeLen = Math.max(
+                    ...edges.map((e) => e.y2 - e.y1)
+                );
+                return { x, maxEdgeLen };
+            });
+            const maxLen = Math.max(...groups.map((g) => g.maxEdgeLen));
+            const stemGroups = groups.filter((g) => g.maxEdgeLen === maxLen);
+            stemLeft = stemGroups[0].x;
+        } else {
+            // 其他字母：最左侧 x 组即竖线
+            stemLeft = sortedX[0];
+        }
+
         const stemEdges = verticalEdges.filter(
-            (e) => Math.abs(e.x - stemX) < 3
+            (e) => Math.abs(e.x - stemLeft) < 3
         );
         const ys = stemEdges.flatMap((e) => [e.y1, e.y2]);
 
-        // 竖线宽度 = 下一个不同 x 值 − 最左侧 x
-        const stemWidth = sortedX.length > 1 ? sortedX[1] - sortedX[0] : 0;
+        const stemIndex = sortedX.indexOf(stemLeft);
+        const stemRight =
+            sortedX[stemIndex + 1] ||
+            stemLeft + (sortedX[1] - sortedX[0]);
 
         return {
-            left: stemX,
-            right: stemX + stemWidth,
+            left: stemLeft,
+            right: stemRight,
             top: Math.min(...ys),
             bottom: Math.max(...ys),
         };
@@ -67,44 +110,57 @@ document.addEventListener('DOMContentLoaded', () => {
             const glyph = font.charToGlyph(char);
             const path = glyph.getPath(0, 0, font.unitsPerEm);
             callback({
-                stem: getStemFromPath(path.commands),
+                stem: getStemFromPath(path.commands, char),
                 unitsPerEm: font.unitsPerEm,
             });
         });
     }
 
-    function applyStemData(pData, dData) {
-        const portfolio = document.querySelector('.portfolio');
+    // ==================== 单字母初始化 ====================
+    function setupLetter(config, triggerGlyph, anchorGlyph) {
+        const triggerEl = document.querySelector(config.triggerSelector);
+        const targetSection = document.querySelector(config.targetSection);
+        const targetChar = targetSection.querySelector('.char-target');
+        const animLetters = targetSection.querySelectorAll('.char-anim');
+
+        if (!triggerEl || !targetSection || !targetChar) {
+            console.error(`配置 "${config.id}" 缺少 DOM 元素`);
+            return;
+        }
+
         const baselineY = parseFloat(portfolio.getAttribute('y'));
         const fontSize = parseFloat(
             window.getComputedStyle(portfolio).fontSize
         );
-        const scale = fontSize / pData.unitsPerEm;
+        const scale = fontSize / triggerGlyph.unitsPerEm;
 
-        const pStem = pData.stem;
-        const pBBox = triggerChar.getBBox();
+        const stem = triggerGlyph.stem;
+        const tBBox = triggerEl.getBBox();
 
-        // ---------- SVG 像素坐标 ----------
-        const stemLeftSVG = pBBox.x + pStem.left * scale;
-        const stemRightSVG = pBBox.x + pStem.right * scale;
-        const stemTopSVG = baselineY + pStem.top * scale;
-        const stemBottomSVG = baselineY + pStem.bottom * scale;
+        // ---------- 触发字母竖线 SVG 坐标 ----------
+        const stemLeftSVG = tBBox.x + stem.left * scale;
+        const stemRightSVG = tBBox.x + stem.right * scale;
+        const stemTopSVG = baselineY + stem.top * scale;
+        const stemBottomSVG = baselineY + stem.bottom * scale;
 
         const stemCenterX = (stemLeftSVG + stemRightSVG) / 2;
         const stemHalfWidth =
             ((stemRightSVG - stemLeftSVG) / 2) * WIDTH_MULTIPLIER;
         const extLeft = stemCenterX - stemHalfWidth;
         const extRight = stemCenterX + stemHalfWidth;
-        const gapSVG = GAP * scale;
+        const gapSVG = config.gap * scale;
 
-        // ========== 1. 延伸路径 ==========
-        let extPath = document.querySelector('.extension-stem');
+        // ---------- 延伸路径 ----------
+        let extPath = document.querySelector(`.extension-${config.id}`);
         if (!extPath) {
             extPath = document.createElementNS(
                 'http://www.w3.org/2000/svg',
                 'path'
             );
-            extPath.setAttribute('class', 'extension-stem');
+            extPath.setAttribute(
+                'class',
+                `extension-stem extension-${config.id}`
+            );
             extPath.setAttribute('fill', 'none');
             extPath.setAttribute('stroke', 'var(--accent)');
             extPath.setAttribute('stroke-linecap', 'butt');
@@ -116,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const extBottomY_total = stemBottomSVG + gapSVG;
         const totalLength = extBottomY_total - extTopY;
 
-        // 垂直中心线，stroke-width = 矩形宽度，视觉与填充矩形一致
         const d = `M ${extCenterX} ${extTopY} L ${extCenterX} ${extBottomY_total}`;
         extPath.setAttribute('d', d);
         extPath.setAttribute('stroke-width', extRight - extLeft);
@@ -124,86 +179,102 @@ document.addEventListener('DOMContentLoaded', () => {
         extPath.style.strokeDashoffset = totalLength;
         extPath.removeAttribute('transform');
 
-        // // ---------- 调试标记 ----------
-        // let debugGroup = document.querySelector('.stem-debug');
-        // if (!debugGroup) {
-        //     debugGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        //     debugGroup.setAttribute('class', 'stem-debug');
-        //     canvas.appendChild(debugGroup);
-        // }
-        // debugGroup.innerHTML = [
-        //     `<circle cx="${stemLeftSVG}" cy="${stemTopSVG}" r="4" fill="red"/>`,
-        //     `<circle cx="${stemRightSVG}" cy="${stemTopSVG}" r="4" fill="red"/>`,
-        //     `<circle cx="${stemLeftSVG}" cy="${stemBottomSVG}" r="4" fill="orange"/>`,
-        //     `<circle cx="${stemRightSVG}" cy="${stemBottomSVG}" r="4" fill="orange"/>`,
-        // ].join('');
-
-        // ========== 2. 对齐 D 文本：D 竖线左沿 ↔ P 竖线左沿 =========
+        // ---------- 锚点字母对齐 ----------
         const extBottomY = stemBottomSVG + gapSVG;
+        const aStem = anchorGlyph.stem;
 
-        const dStem = dData.stem;
-
-        // D 临时放置到测量位置，用和 P 相同的公式算 stemLeftSVG / stemBottomSVG
         targetSection.setAttribute('x', MEASURE_X);
         targetSection.setAttribute('y', MEASURE_Y);
-        const dBBox = targetChar.getBBox();
-        const dStemLeftSVG = dBBox.x + dStem.left * scale;
-        const dStemBottomSVG = MEASURE_Y + dStem.bottom * scale;
+        const aBBox = targetChar.getBBox();
+        const aStemLeftSVG = aBBox.x + aStem.left * scale;
+        const aStemRightSVG = aBBox.x + aStem.right * scale;
+        const aStemTopSVG = MEASURE_Y + aStem.top * scale;
+        const aStemBottomSVG = MEASURE_Y + aStem.bottom * scale;
 
-        const dx = stemLeftSVG - dStemLeftSVG;
-        const dy = extBottomY - dStemBottomSVG;
+        const dx = stemLeftSVG - aStemLeftSVG;
+        const dy = extBottomY - aStemBottomSVG;
 
         targetSection.setAttribute('x', MEASURE_X + dx);
         targetSection.setAttribute('y', MEASURE_Y + dy);
 
-        triggerChar.addEventListener('click', handleTriggerClick);
-    }
+        // ---------- 点击事件 ----------
+        let isAnimating = false;
 
-    function handleTriggerClick() {
-        if (isAnimating) return;
-        isAnimating = true;
+        function handleClick() {
+            if (isAnimating) return;
+            isAnimating = true;
 
-        triggerChar.classList.add('active');
-
-        const extPath = document.querySelector('.extension-stem');
-        if (extPath) {
+            triggerEl.classList.add('active');
             extPath.style.strokeDashoffset = '0';
+
+            setTimeout(() => {
+                targetChar.classList.add('show');
+                animLetters.forEach((l) => l.classList.add('show'));
+                isAnimating = false;
+            }, ANIM_DELAY);
         }
 
-        // 延伸路径画完后，依次显现字母（包括 D）
-        setTimeout(() => {
-            targetChar.classList.add('show');
-            document
-                .querySelectorAll('.char-anim')
-                .forEach((letter) => letter.classList.add('show'));
-            isAnimating = false;
-        }, ANIM_DELAY);
+        triggerEl.addEventListener('click', handleClick);
+
+        // ---------- 保存状态 ----------
+        letterStates[config.id] = {
+            triggerEl,
+            targetSection,
+            targetChar,
+            animLetters,
+            extPath,
+            triggerGlyph,
+            anchorGlyph,
+        };
     }
 
+    // ==================== Resize ====================
     function handleResize() {
-        if (!triggerChar.classList.contains('active')) return;
-        applyStemData(_pData, _dData);
-        const extPath = document.querySelector('.extension-stem');
-        if (extPath) {
-            extPath.style.strokeDashoffset = '0';
-        }
+        LETTER_CONFIGS.forEach((config) => {
+            const state = letterStates[config.id];
+            if (!state || !state.triggerEl.classList.contains('active')) return;
+
+            setupLetter(config, state.triggerGlyph, state.anchorGlyph);
+
+            const extPath = document.querySelector(`.extension-${config.id}`);
+            if (extPath) {
+                extPath.style.strokeDashoffset = '0';
+            }
+        });
     }
 
     window.addEventListener('resize', handleResize);
 
-    // ========== 初始化 ==========
-    Promise.all([
-        new Promise((resolve) => loadGlyphStem('p', resolve)),
-        new Promise((resolve) => loadGlyphStem('D', resolve)),
-    ]).then(([pData, dData]) => {
-        if (!pData || !dData) {
-            console.error('无法加载字形数据');
+    // ==================== 初始化 ====================
+    const uniqueChars = [
+        ...new Set(
+            LETTER_CONFIGS.flatMap((c) => [c.triggerChar, c.anchorChar])
+        ),
+    ];
+
+    const glyphPromises = uniqueChars.map(
+        (char) => new Promise((resolve) => loadGlyphStem(char, resolve))
+    );
+
+    Promise.all(glyphPromises).then((glyphDatas) => {
+        if (glyphDatas.some((d) => !d)) {
+            console.error('字形加载失败');
             return;
         }
-        _pData = pData;
-        _dData = dData;
+        const glyphMap = Object.fromEntries(
+            uniqueChars.map((char, i) => [char, glyphDatas[i]])
+        );
+
         document.fonts.ready.then(() => {
-            requestAnimationFrame(() => applyStemData(pData, dData));
+            requestAnimationFrame(() => {
+                LETTER_CONFIGS.forEach((config) => {
+                    setupLetter(
+                        config,
+                        glyphMap[config.triggerChar],
+                        glyphMap[config.anchorChar]
+                    );
+                });
+            });
         });
     });
 });

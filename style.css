@@ -8,7 +8,7 @@
 :root {
     --accent: #58DE89;
     --bg: #050505;
-    --text: #ffffff;
+    --text: #ccc;
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -53,9 +53,12 @@ body {
 /* 触发字母通用样式 */
 .char-trigger {
     cursor: pointer;
+    paint-order: stroke fill;
+    stroke: transparent;
+    stroke-width: 6px;
     transition: fill 0.2s ease;
     &:hover {
-        fill: rgba(255, 255, 255, 0.8);
+        fill: var(--accent);
     }
     &.active {
         fill: var(--accent);
@@ -74,7 +77,6 @@ body {
 
 /* D 字母作为对齐锚点，字号与 P 一致，随动画逐字出现 */
 .char-target {
-    font-size: 72px;
     fill: var(--accent);
     opacity: 0;
     transition: opacity 0.2s ease, fill 0.2s ease;

@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'r',
             triggerSelector: '.char-trigger-r',
             targetSection: '.section-r',
-            gap: 2500,
+            gap: 4000,
             triggerChar: 'r',
             anchorChar: 'D',
         },
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'f',
             triggerSelector: '.char-trigger-f',
             targetSection: '.section-f',
-            gap: 1500,
+            gap: 2500,
             triggerChar: 'f',
             anchorChar: 'I',
         },
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // ==================== 公共调参区 ====================
-    const WIDTH_MULTIPLIER = 1.35; // 延伸宽度倍率
+    const WIDTH_MULTIPLIER = 1.3; // 延伸宽度倍率
     const MEASURE_X = 500; // 锚点字母临时测量 X 坐标
     const MEASURE_Y = 600; // 锚点字母临时测量 Y 坐标
     const ANIM_DELAY = 500; // 延伸动画时长 (ms)
@@ -78,9 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const edges = verticalEdges.filter(
                     (e) => Math.abs(e.x - x) < 3
                 );
-                const maxEdgeLen = Math.max(
-                    ...edges.map((e) => e.y2 - e.y1)
-                );
+                const maxEdgeLen = Math.max(...edges.map((e) => e.y2 - e.y1));
                 return { x, maxEdgeLen };
             });
             const maxLen = Math.max(...groups.map((g) => g.maxEdgeLen));
@@ -98,8 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const stemIndex = sortedX.indexOf(stemLeft);
         const stemRight =
-            sortedX[stemIndex + 1] ||
-            stemLeft + (sortedX[1] - sortedX[0]);
+            sortedX[stemIndex + 1] || stemLeft + (sortedX[1] - sortedX[0]);
 
         return {
             left: stemLeft,
@@ -142,6 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.getComputedStyle(portfolio).fontSize
         );
         const scale = fontSize / triggerGlyph.unitsPerEm;
+
+        // 锚点字号跟随 portfolio
+        targetChar.style.fontSize = fontSize + 'px';
 
         const stem = triggerGlyph.stem;
         const tBBox = triggerEl.getBBox();
@@ -209,15 +209,45 @@ document.addEventListener('DOMContentLoaded', () => {
         targetSection.setAttribute('x', MEASURE_X + dx);
         targetSection.setAttribute('y', MEASURE_Y + dy);
 
+        // ---------- hover 动画（dy 补偿避免连带后续字母）----------
+        const nextTspan = triggerEl.nextElementSibling;
+
+        triggerEl.addEventListener('mouseenter', () => {
+            if (triggerEl.classList.contains('active')) return;
+            triggerEl.setAttribute('dy', '6');
+            if (nextTspan) nextTspan.setAttribute('dy', '-6');
+        });
+        triggerEl.addEventListener('mouseleave', () => {
+            triggerEl.setAttribute('dy', '0');
+            if (nextTspan) nextTspan.setAttribute('dy', '0');
+        });
+
         // ---------- 点击事件 ----------
         let isAnimating = false;
+
+        function bounceIn() {
+            let t = 0;
+            const dur = 350;
+            const step = () => {
+                t += 16;
+                const p = Math.min(t / dur, 1);
+                const y = p < 0.4 ? 8 * (p / 0.4) : 8 * (1 - (p - 0.4) / 0.6);
+                triggerEl.setAttribute('dy', y.toFixed(1));
+                if (nextTspan) nextTspan.setAttribute('dy', (-y).toFixed(1));
+                if (p < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+        }
 
         function handleClick() {
             if (isAnimating) return;
             isAnimating = true;
 
             triggerEl.classList.add('active');
+            triggerEl.setAttribute('dy', '0');
+            if (nextTspan) nextTspan.setAttribute('dy', '0');
             extPath.style.strokeDashoffset = '0';
+            bounceIn();
 
             setTimeout(() => {
                 targetChar.classList.add('show');

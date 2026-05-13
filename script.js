@@ -28,6 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
             triggerChar: 'f',
             anchorChar: 'I',
         },
+        {
+            id: 'l',
+            triggerSelector: '.char-trigger-l',
+            targetSection: '.section-l',
+            gap: 2500,
+            direction: 'up',
+            triggerChar: 'l',
+            anchorChar: 'A',
+        },
     ];
 
     // ==================== 公共调参区 ====================
@@ -167,12 +176,15 @@ document.addEventListener('DOMContentLoaded', () => {
             canvas.appendChild(extPath);
         }
 
+        const isUp = config.direction === 'up';
         const extCenterX = (extLeft + extRight) / 2;
-        const extTopY = stemTopSVG;
-        const extBottomY_total = stemBottomSVG + gapSVG;
-        const totalLength = extBottomY_total - extTopY;
 
-        const d = `M ${extCenterX} ${extTopY} L ${extCenterX} ${extBottomY_total}`;
+        // 向上：从 stemBottom 出发向上画；向下：从 stemTop 出发向下画
+        const pathStartY = isUp ? stemBottomSVG : stemTopSVG;
+        const pathEndY = isUp ? stemBottomSVG - gapSVG : stemBottomSVG + gapSVG;
+        const totalLength = Math.abs(pathEndY - pathStartY);
+
+        const d = `M ${extCenterX} ${pathStartY} L ${extCenterX} ${pathEndY}`;
         extPath.setAttribute('d', d);
         extPath.setAttribute('stroke-width', extRight - extLeft);
         extPath.style.strokeDasharray = totalLength;
@@ -180,19 +192,19 @@ document.addEventListener('DOMContentLoaded', () => {
         extPath.removeAttribute('transform');
 
         // ---------- 锚点字母对齐 ----------
-        const extBottomY = stemBottomSVG + gapSVG;
         const aStem = anchorGlyph.stem;
 
         targetSection.setAttribute('x', MEASURE_X);
         targetSection.setAttribute('y', MEASURE_Y);
         const aBBox = targetChar.getBBox();
         const aStemLeftSVG = aBBox.x + aStem.left * scale;
-        const aStemRightSVG = aBBox.x + aStem.right * scale;
+        // 向上：A 顶部对齐延伸终点；向下：锚点底部对齐延伸终点
         const aStemTopSVG = MEASURE_Y + aStem.top * scale;
         const aStemBottomSVG = MEASURE_Y + aStem.bottom * scale;
+        const aAlignY = isUp ? aStemTopSVG : aStemBottomSVG;
 
         const dx = stemLeftSVG - aStemLeftSVG;
-        const dy = extBottomY - aStemBottomSVG;
+        const dy = pathEndY - aAlignY;
 
         targetSection.setAttribute('x', MEASURE_X + dx);
         targetSection.setAttribute('y', MEASURE_Y + dy);

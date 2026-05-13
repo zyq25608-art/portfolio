@@ -271,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     isAnimating = false;
                     isExpanded = false;
+                    letterStates[config.id].expanded = false;
                     [...animLetters].forEach(
                         (l) => (l.style.transitionDelay = '')
                     );
@@ -286,6 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     animLetters.forEach((l) => l.classList.add('show'));
                     isAnimating = false;
                     isExpanded = true;
+                    letterStates[config.id].expanded = true;
                 }, ANIM_DELAY);
             }
         }
@@ -294,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ---------- 保存状态 ----------
         letterStates[config.id] = {
+            config,
             triggerEl,
             targetSection,
             targetChar,
@@ -301,16 +304,68 @@ document.addEventListener('DOMContentLoaded', () => {
             extPath,
             triggerGlyph,
             anchorGlyph,
+            expanded: false,
         };
     }
 
     // ==================== Resize ====================
+    function updateGeometry(config, state) {
+        const triggerEl = state.triggerEl;
+        const targetSection = state.targetSection;
+        const targetChar = state.targetChar;
+        const extPath = state.extPath;
+
+        const baselineY = parseFloat(portfolio.getAttribute('y'));
+        const fontSize = parseFloat(window.getComputedStyle(portfolio).fontSize);
+        const scale = fontSize / state.triggerGlyph.unitsPerEm;
+        const stem = state.triggerGlyph.stem;
+        const tBBox = triggerEl.getBBox();
+
+        const stemLeftSVG = tBBox.x + stem.left * scale;
+        const stemRightSVG = tBBox.x + stem.right * scale;
+        const stemTopSVG = baselineY + stem.top * scale;
+        const stemBottomSVG = baselineY + stem.bottom * scale;
+
+        const stemCenterX = (stemLeftSVG + stemRightSVG) / 2;
+        const stemHalfWidth = ((stemRightSVG - stemLeftSVG) / 2) * WIDTH_MULTIPLIER;
+        const extLeft = stemCenterX - stemHalfWidth;
+        const extRight = stemCenterX + stemHalfWidth;
+        const gapSVG = config.gap * scale;
+
+        const isUp = config.direction === 'up';
+        const extCenterX = (extLeft + extRight) / 2;
+        const pathStartY = isUp ? stemBottomSVG : stemTopSVG;
+        const pathEndY = isUp ? stemBottomSVG - gapSVG : stemBottomSVG + gapSVG;
+        const totalLength = Math.abs(pathEndY - pathStartY);
+
+        const d = `M ${extCenterX} ${pathStartY} L ${extCenterX} ${pathEndY}`;
+        extPath.setAttribute('d', d);
+        extPath.setAttribute('stroke-width', extRight - extLeft);
+        extPath.style.strokeDasharray = totalLength;
+        extPath.removeAttribute('transform');
+
+        // 更新锚点位置
+        targetChar.style.fontSize = fontSize + 'px';
+        const aStem = state.anchorGlyph.stem;
+        targetSection.setAttribute('x', MEASURE_X);
+        targetSection.setAttribute('y', MEASURE_Y);
+        const aBBox = targetChar.getBBox();
+        const aStemLeftSVG = aBBox.x + aStem.left * scale;
+        const aAlignY = isUp
+            ? MEASURE_Y + aStem.top * scale
+            : MEASURE_Y + aStem.bottom * scale;
+        const dx = stemLeftSVG - aStemLeftSVG;
+        const dy = pathEndY - aAlignY;
+        targetSection.setAttribute('x', MEASURE_X + dx);
+        targetSection.setAttribute('y', MEASURE_Y + dy);
+    }
+
     function handleResize() {
         LETTER_CONFIGS.forEach((config) => {
             const state = letterStates[config.id];
-            if (!state || !state.triggerEl.classList.contains('active')) return;
+            if (!state || !state.expanded) return;
 
-            setupLetter(config, state.triggerGlyph, state.anchorGlyph);
+            updateGeometry(config, state);
 
             const extPath = document.querySelector(`.extension-${config.id}`);
             if (extPath) {

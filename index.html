@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Portfolio Interaction</title>
+        <link rel="stylesheet" href="style.css" />
+        <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+    </head>
+    <body>
+        <svg
+            class="canvas"
+            viewBox="0 0 1000 800"
+            preserveAspectRatio="xMidYMid meet"
+        >
+            <!-- 隐藏参照：测量字体竖线宽度 -->
+            <text class="stem-measure" x="0" y="0">l</text>
+
+            <!-- 核心单词 -->
+            <text class="portfolio" x="500" y="300" text-anchor="middle">
+                <tspan class="char-trigger" data-target="illustration">p</tspan>
+                <tspan>o</tspan>
+                <tspan>r</tspan>
+                <tspan>t</tspan>
+                <tspan>f</tspan>
+                <tspan>o</tspan>
+                <tspan>l</tspan>
+                <tspan>i</tspan>
+                <tspan>o</tspan>
+            </text>
+
+            <!-- 目标区块 -->
+            <text
+                class="section-title"
+                data-section="illustration"
+                text-anchor="middle"
+            >
+                <!-- 隐藏的 I，用于对齐，仍占位 -->
+                <tspan class="char-target">I</tspan>
+                <!-- 下方是逐个字母，用 style="--i: 序号" 控制动画顺序 -->
+                <tspan class="char-anim" style="--i: 0">L</tspan>
+                <tspan class="char-anim" style="--i: 1">L</tspan>
+                <tspan class="char-anim" style="--i: 2">U</tspan>
+                <tspan class="char-anim" style="--i: 3">S</tspan>
+                <tspan class="char-anim" style="--i: 4">T</tspan>
+                <tspan class="char-anim" style="--i: 5">R</tspan>
+                <tspan class="char-anim" style="--i: 6">A</tspan>
+                <tspan class="char-anim" style="--i: 7">T</tspan>
+                <tspan class="char-anim" style="--i: 8">I</tspan>
+                <tspan class="char-anim" style="--i: 9">O</tspan>
+                <tspan class="char-anim" style="--i: 10">N</tspan>
+                <!-- 空格，也占位，可以不加动画但为了保持序列统一，也设为可动画，因其无色，出现与否不影响视觉 -->
+                <tspan class="char-anim space" style="--i: 11">&nbsp;</tspan>
+
+                <tspan class="char-anim" style="--i: 12">W</tspan>
+                <tspan class="char-anim" style="--i: 13">O</tspan>
+                <tspan class="char-anim" style="--i: 14">R</tspan>
+                <tspan class="char-anim" style="--i: 15">K</tspan>
+            </text>
+
+            <!-- 延伸线条 -->
+            <line
+                class="extension-line"
+                data-from="p"
+                data-to="illustration"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="0"
+            />
+        </svg>
+
+        <div class="hint">CLICK LETTER P</div>
+
+        <script src="script.js"></script>
+    </body>
+</html>

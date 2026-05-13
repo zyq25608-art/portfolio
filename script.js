@@ -239,21 +239,55 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(step);
         }
 
+        let isExpanded = false;
+
         function handleClick() {
             if (isAnimating) return;
             isAnimating = true;
 
-            triggerEl.classList.add('active');
             triggerEl.setAttribute('dy', '0');
             if (nextTspan) nextTspan.setAttribute('dy', '0');
-            extPath.style.strokeDashoffset = '0';
             bounceIn();
 
-            setTimeout(() => {
-                targetChar.classList.add('show');
-                animLetters.forEach((l) => l.classList.add('show'));
-                isAnimating = false;
-            }, ANIM_DELAY);
+            if (isExpanded) {
+                // 收起：字母从右至左消失 → trigger 从下往上变色 → 线条收回
+                const total = animLetters.length;
+                [...animLetters].forEach((l, i) => {
+                    l.style.transitionDelay = (total - 1 - i) * 0.06 + 's';
+                });
+                targetChar.style.transitionDelay = total * 0.06 + 's';
+                animLetters.forEach((l) => l.classList.remove('show'));
+                targetChar.classList.remove('show');
+
+                const lettersDone = (total + 1) * 60 + 200;
+
+                // 线条收回
+                const lineEnd = lettersDone + ANIM_DELAY;
+                setTimeout(() => {
+                    extPath.style.strokeDashoffset = totalLength;
+                }, lettersDone);
+
+                // 全部结束解锁（trigger 保持 accent 不变色）
+                setTimeout(() => {
+                    isAnimating = false;
+                    isExpanded = false;
+                    [...animLetters].forEach(
+                        (l) => (l.style.transitionDelay = '')
+                    );
+                    targetChar.style.transitionDelay = '';
+                }, lineEnd);
+            } else {
+                // 展开
+                triggerEl.classList.add('active');
+                extPath.style.strokeDashoffset = '0';
+
+                setTimeout(() => {
+                    targetChar.classList.add('show');
+                    animLetters.forEach((l) => l.classList.add('show'));
+                    isAnimating = false;
+                    isExpanded = true;
+                }, ANIM_DELAY);
+            }
         }
 
         triggerEl.addEventListener('click', handleClick);

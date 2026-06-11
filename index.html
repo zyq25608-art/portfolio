@@ -21,9 +21,9 @@
             <text class="portfolio" x="500" y="300" text-anchor="middle">
                 <tspan class="char-trigger char-trigger-p">p</tspan>
                 <tspan>o</tspan>
-                <tspan class="char-trigger char-trigger-r">r</tspan>
+                <tspan>r</tspan>
                 <tspan>t</tspan>
-                <tspan class="char-trigger char-trigger-f">f</tspan>
+                <tspan>f</tspan>
                 <tspan>o</tspan>
                 <tspan class="char-trigger char-trigger-l">l</tspan>
                 <tspan>i</tspan>
@@ -108,9 +108,27 @@
 
         </svg>
 
+        <!-- 书本展示层 -->
+        <div id="book-layer" class="book-layer hidden">
+            <div id="book" class="book">
+                <div class="book-page book-page-left">
+                    <div class="page-content" id="page-left-content"></div>
+                </div>
+                <div class="book-page book-page-right">
+                    <div class="page-content" id="page-right-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="about-email" class="about-email">
+            <p>Email: 2816783712@qq.com</p>
+            <p>WX: z1332787500</p>
+        </div>
+
         <div class="hint">CLICK LETTER P</div>
 
         <script src="background-set.js"></script>
+        <script src="digital-book.js"></script>
         <script src="script.js"></script>
     </body>
 </html>

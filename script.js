@@ -12,22 +12,22 @@ document.addEventListener('DOMContentLoaded', () => {
             triggerChar: 'p',
             anchorChar: 'D',
         },
-        {
-            id: 'r',
-            triggerSelector: '.char-trigger-r',
-            targetSection: '.section-r',
-            gap: 4000,
-            triggerChar: 'r',
-            anchorChar: 'D',
-        },
-        {
-            id: 'f',
-            triggerSelector: '.char-trigger-f',
-            targetSection: '.section-f',
-            gap: 2500,
-            triggerChar: 'f',
-            anchorChar: 'I',
-        },
+        // {
+        //     id: 'r',
+        //     triggerSelector: '.char-trigger-r',
+        //     targetSection: '.section-r',
+        //     gap: 4000,
+        //     triggerChar: 'r',
+        //     anchorChar: 'D',
+        // },
+        // {
+        //     id: 'f',
+        //     triggerSelector: '.char-trigger-f',
+        //     targetSection: '.section-f',
+        //     gap: 2500,
+        //     triggerChar: 'f',
+        //     anchorChar: 'I',
+        // },
         {
             id: 'l',
             triggerSelector: '.char-trigger-l',
@@ -250,7 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
             bounceIn();
 
             if (isExpanded) {
-                // 收起：字母从右至左消失 → trigger 从下往上变色 → 线条收回
+                // 收起
+                if (config.id === 'p' && typeof closeBook === 'function') closeBook();
+                if (config.id === 'l') {
+                    const email = document.getElementById('about-email');
+                    if (email) email.classList.remove('show');
+                }
                 const total = animLetters.length;
                 [...animLetters].forEach((l, i) => {
                     l.style.transitionDelay = (total - 1 - i) * 0.06 + 's';
@@ -293,6 +298,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         triggerEl.addEventListener('click', handleClick);
+
+        // target 文字 hover 下移效果（p 额外打开书本）
+        if (config.id === 'p' || config.id === 'l') {
+            targetSection.style.cursor = 'pointer';
+
+            const sectionNext = targetSection.nextElementSibling;
+            targetSection.addEventListener('mouseenter', () => {
+                targetSection.setAttribute('dy', '6');
+                if (sectionNext) sectionNext.setAttribute('dy', '-6');
+            });
+            targetSection.addEventListener('mouseleave', () => {
+                targetSection.setAttribute('dy', '0');
+                if (sectionNext) sectionNext.setAttribute('dy', '0');
+            });
+
+            if (config.id === 'p') {
+                targetSection.addEventListener('click', () => {
+                    if (!isExpanded) return;
+                    if (typeof openBook === 'function') openBook('digital-products');
+                });
+            }
+
+            if (config.id === 'l') {
+                targetSection.addEventListener('click', () => {
+                    if (!isExpanded) return;
+                    const email = document.getElementById('about-email');
+                    if (email) email.classList.toggle('show');
+                });
+            }
+        }
 
         // ---------- 保存状态 ----------
         letterStates[config.id] = {

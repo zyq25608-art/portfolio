@@ -10,17 +10,17 @@ const bookState = {
 const bookContent = {
     'digital-products': [
         {
-            left: { title: '01 My Room', sub: '培育一个数字空间', date: '2026.03', video: 'assets/MyRoom/MyRoom.mp4', poster: 'assets/MyRoom/MyRoom-封面.jpg' },
-            right: { title: '02 AI Chat', sub: '培育一段数字关系', date: '2026.05', video: 'assets/AI Chat/AI Chat.mp4', poster: 'assets/AI Chat/AI Chat-封面.jpg' },
+            left: { title: '01 My Room', sub: '培育一个数字空间', date: '2026.03', embed: 'https://player.bilibili.com/player.html?bvid=BV19iJj6HEGE' },
+            right: { title: '02 AI Chat', sub: '培育一段数字关系', date: '2026.05', embed: 'https://player.bilibili.com/player.html?bvid=BV1GiJj6HERU' },
         },
     ],
 };
 
 // ==================== 渲染 ====================
 function renderPageContent(pageData) {
-    const video = pageData.video
+    const video = pageData.embed
         ? `<div class="page-video">
-            <video src="${pageData.video}" poster="${pageData.poster}" preload="metadata" controls></video>
+            <iframe src="${pageData.embed}" allowfullscreen="true" scrolling="no" frameborder="0"></iframe>
         </div>`
         : '';
     const dateTag = pageData.date ? `<div class="page-date">${pageData.date}</div>` : '';

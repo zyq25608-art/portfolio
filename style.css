@@ -6,9 +6,13 @@
 
 
 :root {
+    --text: var(--light);
     --accent: #58DE89;
-    --bg: #050505;
-    --text: #ffffff;
+    --accent-pink: #EE1256;
+    --text-dim: #A6A6A6;
+    --dark: #111;
+    --light: rgba(255, 255, 255, 0.95);
+    --glass: rgba(17, 17, 17, 0.5);
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -21,7 +25,7 @@
 }
 
 body {
-    background: var(--bg);
+    background: var(--dark);
     color: var(--text);
     /* font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
         'Helvetica Neue', Arial, sans-serif; */
@@ -62,7 +66,7 @@ body {
         position: absolute;
         inset: 0;
         backdrop-filter: blur(2px);
-        background: rgba(17, 17, 17, 0.507);
+        background: var(--glass);
         transition: backdrop-filter 2s ease, background 2s ease;
     }
     &:hover::after {
@@ -84,7 +88,7 @@ body {
 }
 
 .grid-cell {
-    border: 1px solid rgba(17, 17, 17, 0.507);
+    border: 1px solid var(--glass);
     
 }
 
@@ -109,7 +113,7 @@ body {
     font-size: 72px;
     font-weight: 300;
     letter-spacing: 6px;
-    fill: var(--text);
+    fill: var(--text-dim);
     user-select: none;
 }
 
@@ -134,7 +138,7 @@ body {
     font-size: 24px;
     font-weight: 200;
     letter-spacing: 4px;
-    fill: #333;
+    fill: var(--text-dim);
     user-select: none;
 }
 
@@ -179,11 +183,16 @@ body {
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 12px;
+    font-size: 16px;
     letter-spacing: 2px;
-    color: #444;
+    color: var(--text-dim);
     font-weight: 200;
     pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+    p + p {
+        margin-top: 6px;
+    }
 }
 
 /* ========== 响应式 ========== */
@@ -225,19 +234,19 @@ body {
 .book-page {
     width: 50%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
     &.book-page-left {
-        background: rgba(20, 20, 20, 0.95);
+        background: var(--dark);
         transition: background 0.5s ease;
+        .page-sub { color: var(--accent); }
+        .page-date { color: var(--accent); }
     }
     &.book-page-right {
-        background: rgba(255, 255, 255, 0.95);
-        color: #111;
+        background: var(--light);
+        color: var(--accent-pink);
         transition: background 0.5s ease;
-        .page-inner h2 { color: #111; }
-        .page-sub { color: rgba(0, 0, 0, 0.45); }
-        .page-date { color: rgba(0, 0, 0, 0.45); }
+        .page-inner h2 { color: var(--accent-pink); }
+        .page-sub { color: var(--accent-pink); }
+        .page-date { color: var(--accent-pink); }
     }
 }
 
@@ -245,7 +254,6 @@ body {
     width: 100%;
     height: 100%;
     overflow: visible;
-    padding: 40px;
     box-sizing: border-box;
     color: var(--text);
     text-align: center;
@@ -258,16 +266,35 @@ body {
     position: absolute;
     left: 40px;
     right: 40px;
-    top: 50%;
+    top: 45%;
     transform: translateY(-50%);
     transition: top 0.8s var(--ease), transform 0.8s var(--ease);
     display: flex;
     flex-direction: column;
     align-items: center;
+    will-change: top;
+}
+
+.page-date {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 40%;
+    transform: translateY(0);
+    transition: bottom 0.8s var(--ease), transform 0.8s var(--ease);
+    font-family: 'Pixelify Sans', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    will-change: bottom;
 }
 
 .page-content.to-top .page-inner {
     top: 40px;
+    transform: translateY(0);
+}
+
+.page-content.to-top .page-date {
     bottom: 40px;
     transform: translateY(0);
 }
@@ -294,13 +321,14 @@ body {
     font-size: 14px;
     font-weight: 200;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--text-dim);
     margin-top: 12px;
 }
 
 .page-video {
     display: none;
-    width: 100%;
+    width: calc(100% + 80px);
+    /* margin-left: -40px; */
     margin-top: 24px;
     video {
         width: 100%;
@@ -310,14 +338,6 @@ body {
     }
 }
 
-.page-date {
-    margin-top: auto;
-    padding-top: 24px;
-    font-family: 'Pixelify Sans', monospace;
-    font-size: 13px;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.4);
-}
 
 .video-show .page-video {
     display: block;
@@ -333,27 +353,35 @@ body {
     letter-spacing: 2px;
     color: var(--accent);
     opacity: 0;
+    pointer-events: none;
     transform: translateX(20px);
     transition: opacity 0.4s ease, transform 0.4s ease;
     user-select: text;
+    .about-avatar {
+        width: 180px;
+        border: 2px dashed var(--accent);
+
+  
+        margin-bottom: 12px;
+        display: block;
+    }
     p {
-        margin: 0;
+        margin: 5px;
+        font-weight: 500;
         & + p {
-            margin-top: 8px;
+            margin-top: 14px;
         }
     }
-    .about-label {
-        font-size: 13px;
-        letter-spacing: 4px;
-        color: rgba(255, 255, 255, 0.35);
-        margin-top: 20px;
-        &:first-child {
-            margin-top: 0;
-        }
+    .about-gap {
+        margin-top: 24px;
+    }
+    .about-dim {
+        color: var(--text-dim);
     }
     &.show {
         opacity: 1;
         transform: translateX(0);
+        pointer-events: auto;
     }
 }
 
@@ -361,6 +389,6 @@ body {
     margin-top: 16px;
     font-family: 'Pixelify Sans', monospace;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-dim);
     letter-spacing: 2px;
 }

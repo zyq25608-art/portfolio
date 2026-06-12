@@ -333,10 +333,10 @@ body {
     width: calc(100% + 80px);
     /* margin-left: -40px; */
     margin-top: 24px;
-    iframe {
+    video {
         width: 100%;
-        aspect-ratio: 16 / 9;
-        border: 0;
+        border-radius: 0;
+        outline: none;
         display: block;
     }
 }

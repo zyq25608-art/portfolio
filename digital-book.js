@@ -23,13 +23,12 @@ function renderPageContent(pageData) {
             <video src="${pageData.video}" poster="${pageData.poster}" preload="metadata" controls></video>
         </div>`
         : '';
-    const dateTag = pageData.date ? `<div class="page-date">${pageData.date}</div>` : '';
     const colorStyle = pageData.color ? ` style="color:${pageData.color}"` : '';
     return `<div class="page-inner">
         <h2${colorStyle}>${pageData.title}</h2>
         ${pageData.sub ? `<p class="page-sub">${pageData.sub}</p>` : ''}
         ${video}
-        ${dateTag}
+        ${pageData.date ? `<div class="page-date">${pageData.date}</div>` : ''}
     </div>`;
 }
 

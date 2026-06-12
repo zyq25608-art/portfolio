@@ -10,8 +10,8 @@ const bookState = {
 const bookContent = {
     'digital-products': [
         {
-            left: { title: '01 My Room', sub: '培育一个数字空间', video: 'assets/MyRoom/MyRoom.mp4', poster: 'assets/MyRoom/MyRoom-封面.jpg' },
-            right: { title: '02 AI Chat', sub: '培育一段数字关系', color: '#EE1256', video: 'assets/AI Chat/AI Chat.mp4', poster: 'assets/AI Chat/AI Chat-封面.jpg' },
+            left: { title: '01 My Room', sub: '培育一个数字空间', date: '2026.03', video: 'assets/MyRoom/MyRoom.mp4', poster: 'assets/MyRoom/MyRoom-封面.jpg' },
+            right: { title: '02 AI Chat', sub: '培育一段数字关系', color: '#EE1256', date: '2026.05', video: 'assets/AI Chat/AI Chat.mp4', poster: 'assets/AI Chat/AI Chat-封面.jpg' },
         },
     ],
 };
@@ -23,11 +23,13 @@ function renderPageContent(pageData) {
             <video src="${pageData.video}" poster="${pageData.poster}" preload="metadata" controls></video>
         </div>`
         : '';
+    const dateTag = pageData.date ? `<div class="page-date">${pageData.date}</div>` : '';
     const colorStyle = pageData.color ? ` style="color:${pageData.color}"` : '';
     return `<div class="page-inner">
         <h2${colorStyle}>${pageData.title}</h2>
         ${pageData.sub ? `<p class="page-sub">${pageData.sub}</p>` : ''}
         ${video}
+        ${dateTag}
     </div>`;
 }
 

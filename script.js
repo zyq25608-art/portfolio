@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 收起
                 if (config.id === 'p' && typeof closeBook === 'function') closeBook();
                 if (config.id === 'l') {
-                    const email = document.getElementById('about-email');
+                    const email = document.getElementById('about-info');
                     if (email) email.classList.remove('show');
                 }
                 const total = animLetters.length;
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (config.id === 'l') {
                 targetSection.addEventListener('click', () => {
                     if (!isExpanded) return;
-                    const email = document.getElementById('about-email');
+                    const email = document.getElementById('about-info');
                     if (email) email.classList.toggle('show');
                 });
             }

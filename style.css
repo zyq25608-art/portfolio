@@ -41,7 +41,7 @@ body {
     z-index: 0;
     background-image: url('assets/background-fig.jpg');
     background-size: cover;
-    background-position: center;
+    background-position: top;
 }
 
 /* ========== 下层：模糊瓷砖 ========== */
@@ -236,6 +236,7 @@ body {
         transition: background 0.5s ease;
         .page-inner h2 { color: #111; }
         .page-sub { color: rgba(0, 0, 0, 0.45); }
+        .page-date { color: rgba(0, 0, 0, 0.45); }
     }
 }
 
@@ -258,13 +259,16 @@ body {
     right: 40px;
     top: 50%;
     transform: translateY(-50%);
-    transition: top 0.8s var(--ease), transform 0.8s var(--ease);
+    transition: top 0.8s var(--ease), transform 0.8s var(--ease), bottom 0.8s var(--ease);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .page-content.to-top .page-inner {
     top: 40px;
+    bottom: 40px;
     transform: translateY(0);
-    padding-bottom: 60px;
 }
 
 .book-page.to-top {
@@ -295,6 +299,7 @@ body {
 
 .page-video {
     display: none;
+    position: relative;
     width: calc(100% + 80px);
     margin-left: -40px;
     margin-top: 24px;
@@ -306,11 +311,20 @@ body {
     }
 }
 
+.page-date {
+    margin-top: auto;
+    padding-top: 24px;
+    font-family: 'Pixelify Sans', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
 .video-show .page-video {
     display: block;
 }
 
-.about-email {
+.about-info {
     position: fixed;
     top: 120px;
     right: 60px;
@@ -322,11 +336,20 @@ body {
     opacity: 0;
     transform: translateX(20px);
     transition: opacity 0.4s ease, transform 0.4s ease;
-    pointer-events: none;
+    user-select: text;
     p {
         margin: 0;
         & + p {
             margin-top: 8px;
+        }
+    }
+    .about-label {
+        font-size: 13px;
+        letter-spacing: 4px;
+        color: rgba(255, 255, 255, 0.35);
+        margin-top: 20px;
+        &:first-child {
+            margin-top: 0;
         }
     }
     &.show {

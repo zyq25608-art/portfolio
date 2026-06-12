@@ -7,7 +7,7 @@ function getRenderSizes(vpW, vpH) {
         renderW: Math.round(imgW * scale),
         renderH: Math.round(imgH * scale),
         offsetX: Math.round((vpW - Math.round(imgW * scale)) / 2),
-        offsetY: vpH - Math.round(imgH * scale),
+        offsetY: 0,
     };
 }
 

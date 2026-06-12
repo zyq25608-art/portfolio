@@ -183,13 +183,16 @@ body {
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 16px;
+    font-size: 14px;
     letter-spacing: 2px;
     color: var(--text-dim);
     font-weight: 200;
-    pointer-events: none;
     text-align: center;
-    white-space: nowrap;
+    user-select: none;
+    transition: color 0.3s ease;
+    &:hover {
+        color: var(--accent);
+    }
     p + p {
         margin-top: 6px;
     }

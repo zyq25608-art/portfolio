@@ -38,6 +38,22 @@ body {
     align-items: center;
 }
 
+/* ========== Loading 加载页 ========== */
+#loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Pixelify Sans', monospace;
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    transition: opacity 0.6s ease;
+}
+
 /* ========== 背景层 ========== */
 .bg-base {
     position: fixed;

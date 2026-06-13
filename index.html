@@ -8,6 +8,8 @@
         <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
     </head>
     <body>
+        <div id="loading-screen"><span id="loading-text"></span></div>
+
         <div class="bg-base"></div>
         <div class="grid-overlay" id="grid"></div>
         <div class="grid-lines" id="grid-lines"></div>
@@ -144,6 +146,73 @@
                 有些问题无法仅靠思考得到答案，因此我选择先让它存在，然后在使用与相处的过程中理解它。
             </p>
         </div>
+
+        <!-- loading 页：打字动画 + 资源检测 + 超时 -->
+        <script>
+            (function () {
+                var el = document.getElementById('loading-text');
+                var chars = 'loading...'.split('');
+                var i = 0;
+                var TIMEOUT = 8000;
+                var onloadReady = false;
+                var assetsReady = false;
+                var done = false;
+
+                // 逐字循环
+                function type() {
+                    if (done) return;
+                    el.textContent = chars
+                        .slice(0, i + 1)
+                        .join('');
+                    i = (i + 1) % chars.length;
+                    if (i === 0) {
+                        setTimeout(type, 400);
+                    } else {
+                        setTimeout(type, 150);
+                    }
+                }
+                type();
+
+                // 检查是否可退出
+                function tryExit() {
+                    if (done) return;
+                    if (!onloadReady || !(assetsReady || window.__assetsReady))
+                        return;
+                    done = true;
+                    var screen = document.getElementById('loading-screen');
+                    screen.style.opacity = '0';
+                    screen.style.pointerEvents = 'none';
+                    setTimeout(function () {
+                        screen.style.display = 'none';
+                    }, 600);
+                }
+
+                // window.onload
+                window.addEventListener('load', function () {
+                    onloadReady = true;
+                    tryExit();
+                });
+
+                // script.js 字体加载完成后会设 __assetsReady
+                Object.defineProperty(window, '__assetsReady', {
+                    set: function (v) {
+                        assetsReady = v;
+                        tryExit();
+                    },
+                    get: function () {
+                        return assetsReady;
+                    },
+                    configurable: true,
+                });
+
+                // 超时容错
+                setTimeout(function () {
+                    onloadReady = true;
+                    assetsReady = true;
+                    tryExit();
+                }, TIMEOUT);
+            })();
+        </script>
 
         <script src="background-set.js"></script>
         <script src="digital-book.js"></script>

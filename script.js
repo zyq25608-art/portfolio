@@ -440,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         glyphMap[config.anchorChar]
                     );
                 });
+                window.__assetsReady = true;
             });
         });
     });

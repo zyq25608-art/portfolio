@@ -243,8 +243,8 @@ body {
 }
 
 .book {
-    width: 1500px;
-    height: 650px;
+    width: min(1500px, 90vw);
+    aspect-ratio: 1500 / 650;
     display: flex;
     position: relative;
 }
@@ -302,7 +302,7 @@ body {
     transform: translateY(0);
     transition: bottom 0.8s var(--ease), transform 0.8s var(--ease);
     font-family: 'Pixelify Sans', monospace;
-    font-size: 13px;
+    font-size: clamp(10px, 0.9vw, 13px);
     letter-spacing: 2px;
     color: var(--text-dim);
     will-change: bottom;
@@ -329,7 +329,7 @@ body {
 
 .page-inner h2 {
     font-family: 'Pixelify Sans', monospace;
-    font-size: 28px;
+    font-size: clamp(18px, 2vw, 28px);
     font-weight: 300;
     letter-spacing: 2px;
     color: var(--accent);
@@ -337,7 +337,7 @@ body {
 
 .page-sub {
     font-family: 'Pixelify Sans', monospace;
-    font-size: 14px;
+    font-size: clamp(11px, 1vw, 14px);
     font-weight: 200;
     letter-spacing: 2px;
     color: var(--text-dim);
@@ -364,12 +364,15 @@ body {
 
 .about-info {
     position: fixed;
-    top: 120px;
-    right: 60px;
+    top: clamp(60px, 8vh, 120px);
+    right: clamp(20px, 4vw, 60px);
+    max-width: clamp(200px, 16vw, 280px);
+    max-height: calc(100vh - clamp(60px, 8vh, 120px) - 30px);
+    overflow-y: auto;
     z-index: 5;
     font-family: 'Pixelify Sans', monospace;
-    font-size: 18px;
-    letter-spacing: 2px;
+    font-size: clamp(14px, 1.2vw, 18px);
+    letter-spacing: clamp(1px, 0.15vw, 2px);
     color: var(--accent);
     opacity: 0;
     pointer-events: none;
@@ -377,7 +380,7 @@ body {
     transition: opacity 0.4s ease, transform 0.4s ease;
     user-select: text;
     .about-avatar {
-        width: 180px;
+        width: clamp(120px, 12vw, 180px);
         border: 2px dashed var(--accent);
 
   
@@ -396,6 +399,16 @@ body {
     }
     .about-dim {
         color: var(--text-dim);
+    }
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 2px;
     }
     &.show {
         opacity: 1;
